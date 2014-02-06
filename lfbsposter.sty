@@ -1,0 +1,158 @@
+% Copyright 2013 by Pablo Reble, Georg Wassen
+%
+% This file may be distributed and/or modified
+%
+% 1. under the LaTeX Project Public License and/or
+% 2. under the GNU Public License.
+%
+% See the file doc/licenses/LICENSE for more details.
+
+\ProvidesPackage{lfbsposter}
+
+\RequirePackage{tikz}
+\RequirePackage{geometry}
+\usetikzlibrary{calc}
+
+\definecolor{rwthblue}{cmyk}{1,0.5,0,0} % #0069B3
+
+\setlength{\columnsep}{2cm}
+\setlength{\columnseprule}{0mm}
+\setlength{\parindent}{0cm}
+
+\newlength{\mydist}
+\setlength{\mydist}{1cm}
+%
+\newlength{\pcolwidth}
+\setlength{\pcolwidth}{.5\paperwidth}
+\addtolength{\pcolwidth}{-3cm}  
+%
+\newlength{\boxwidth}
+\setlength{\boxwidth}{\pcolwidth}
+\addtolength{\boxwidth}{-2cm}
+
+\newenvironment{poster}{
+  \begin{center}
+    \begin{minipage}[c]{\textwidth}
+}{
+    \end{minipage}
+  \end{center}
+}
+
+\newenvironment{pcolumn}[1]{
+  \begin{minipage}{#1}
+}{
+  \end{minipage}
+}
+
+\tikzset{
+  every tick label/.append style={font=\large, inner ysep=20pt, inner xsep=15pt}
+}
+
+\tikzstyle{mybox} = [draw=gray!80, fill=white, very thick, rectangle, rounded corners, inner sep=1cm, inner ysep=2cm, font=\Large]
+\tikzstyle{fancytitle} = [minimum height=2cm,fill=gray!80, text=white, right=1cm, font=\LARGE, inner xsep=1cm]
+\tikzstyle{fancycaption} = [minimum height=4cm,anchor=south,font=\large]
+
+\geometry{a0paper,left=0cm,right=0cm, top=0cm, bottom=0cm}
+
+\renewcommand*{\author}[1]{}
+\renewcommand*{\title}[1]{}
+\newcommand*{\institute}[1]{}
+
+\newcommand*{\printauthor}{}
+\newcommand*{\printtitle}{}
+\newcommand*{\printinstitute}{}
+
+\renewcommand*{\author}[1]{\renewcommand*{\printauthor}{#1}}
+\renewcommand*{\title}[1]{\renewcommand*{\printtitle}{#1}}
+\renewcommand*{\institute}[1]{\renewcommand*{\printinstitute}{#1}}
+
+\newcommand{\makeheader}{
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[fill=gray!30,minimum width=\paperwidth,minimum height=\paperheight,anchor=north west] at (current page.north west){};
+    \node[fill=black,minimum width=\paperwidth,minimum height=9cm,anchor=north west] at (current page.north west)(header){};
+    \node[white,text=white,anchor=east,text width=60cm,align=right] at ($(header.east)+(-6cm,1.5cm)$) (title)
+      {\Huge\bfseries\printtitle};
+    \node[white,anchor=north east,text=white] at (title.south east) (author)
+      {\LARGE\printauthor};
+  \end{tikzpicture}
+}
+
+\newcommand{\makefooter}{
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[fill=black,minimum width=\paperwidth,minimum height=6ex,anchor=south west] at (current page.south west)(footer){};
+      \node[right=5cm,minimum height=11.5cm,minimum width=15.5cm,fill=rwthblue,anchor=north west] at (current page.north west) (box){};
+      \node[anchor=south] at (box.south){\includegraphics[width=14.5cm]{logo/rwth_logo_white}};
+      \node[inner sep=20pt,inner xsep=2cm,minimum width=30ex,anchor=south east] at (footer.north east) (lfbs)
+        {\includegraphics[width=30ex]{logo/lfbslogo}};
+      \node[white,text=white,anchor=west,right=2cm] at (footer.west) {\Large \texttt{<lastname>@lfbs.rwth-aachen.de}};
+      \node[white,text=white,anchor=east,left=2cm] at (footer.east) {\Large \texttt{http://www.lfbs.rwth-aachen.de}};
+    \node[anchor=north east,text=rwthblue!50] at (author.south east) 
+      {\Large\bfseries\printinstitute};
+  \end{tikzpicture}
+}
+
+
+
+
+% see: http://tex.stackexchange.com/questions/5639/defining-a-new-environment-whose-contents-go-in-a-tikz-node
+
+% \begin{posterbox}{<height>}{<caption>}
+%   ...
+% \end{posterbox}
+
+%\RequirePackage{environ}
+%\NewEnviron{posterbox}[2]{%
+%  \begin{tikzpicture}
+%    \node [mybox] (box){%
+%    \begin{minipage}[t][#1]{\boxwidth}
+%
+%      \BODY
+%
+%    \end{minipage}
+%    };
+%    \node[fancytitle] at (box.north west) {\textbf{#2}};
+%  \end{tikzpicture}%
+%}
+
+%% Georg Wassen, 19.1.2013
+%% The \NewEnviron solution was needed (and used) because of the unbalanced curly braces
+%% (\begin would need a \node{ and \end would need the closing } )
+%% The Implementation of \newenvironment{name}{begin}{end} does not allow unbalanced braces.
+%% But the \NewEnviron has problems with lstlisting. 
+%% A new solution for the unbalanced braces was found in the savebox (and using lrbox).
+%% Now, the content of the posterbox environment is catched in the savebox and later
+%% inserted into the TikZ- \node{...} (which is generated in the \end part).
+%% The 2nd parameter (posterbox title) is NOT available in the \end part and must
+%% be stored in a temporary macro. But as posterboxes can not nest, this is not a problem.
+
+
+\newsavebox\posterbox@sbox%
+\newenvironment{posterbox@helper}
+ {%
+  \lrbox\posterbox@sbox
+ }
+ {%
+  \endlrbox
+ }
+
+\newcommand{\posterbox@title}{}
+\newenvironment{posterbox}[2]{%
+  % #2 is not available in the \end{lstposterbox} part.
+  % -> store in temporary macro for later (re)use
+  \renewcommand{\posterbox@title}{#2}
+  \begin{posterbox@helper}
+    \begin{minipage}[t][#1]{\boxwidth}
+    \Large
+}{%
+    \end{minipage}
+  \end{posterbox@helper}
+  \begin{tikzpicture}
+    \node [mybox] (box){%
+
+      \usebox\posterbox@sbox
+
+    };
+    \node[fancytitle] at (box.north west) {\textbf{\posterbox@title}};
+  \end{tikzpicture}%
+}
+

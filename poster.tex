@@ -1,0 +1,195 @@
+% Latex RWTH Poster template (based on a0poster document class)
+% by Pablo Reble, Georg Wassen and Kirstin Schubert
+% RWTH Aachen University
+%
+%This file may be distributed and/or modified
+%
+%1. under the LaTeX Project Public License and/or
+%2. under the GNU Public License. 
+%
+% [21.01.2013]	 Version 0.1: First version of the template
+
+\documentclass[a0,portrait,final]{a0poster}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily, language={C}}     % Standards for Listings
+
+\usepackage{amsmath,amsthm, amssymb, latexsym,tikz}
+\usepackage{multicol}
+\usetikzlibrary{arrows,shapes}
+\usepackage{pgfplots}
+\pgfplotsset{
+  every axis/.append style={thick}
+}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+
+% \myfig - replacement for \figure
+% necessary, since in multicol-environment 
+% \figure won't work
+
+\newcommand{\myfig}[3][0]{
+  \begin{center}
+    \vspace{1.5cm}
+    \includegraphics[width=#3\hsize, angle=#1]{#2}
+    \nobreak\medskip
+  \end{center}}
+
+% \mycaption - replacement for \caption
+% necessary, since in multicol-environment \figure and
+% therefore \caption won't work
+
+%  \setcounter{figure}{1}
+%  \newcommand{\mycaption}[1]{
+%    \vspace{0.5cm}
+%    \begin{quote}
+%      %{{\sc Figure} \arabic{figure}: #1}
+%      {#1}
+%    \end{quote}
+%    \vspace{1cm}
+%    \stepcounter{figure}
+%  }
+%	
+
+%\newenvironment{pcolumn}[1]{
+%\begin{minipage}{#1}
+  %\begin{center}
+%  }{
+  %\end{center}
+%  \end{minipage}
+%  }
+
+\usepackage{lfbsposter}
+
+\begin{document}
+%
+  \title{Title of an interesting Poster, \\ which can also go into the second line}
+  \author{Foo Duck and Bar Bunny}
+  \institute{Chair for Operating Systems,RWTH Aachen University, Germany}
+  \sffamily
+  %\tikzexternaldisable
+
+    \begin{poster}
+    \makeheader
+    \makefooter
+    \vspace{12cm}
+    \begin{multicols}{2}
+    \hspace{2cm}
+    \begin{minipage}[r]{\pcolwidth}
+
+    %%
+    %% top left box
+    %%
+    \begin{posterbox}{25cm}{Items}
+      This is an example for a poster box
+      \begin{itemize}
+        \item Punkt 1
+        \item Punkt 2
+        \item Punkt 3
+      \end{itemize}
+    \end{posterbox}
+    
+    \vspace{\mydist}
+    
+    %%
+    %% center left box
+    %%
+    \begin{posterbox}{27cm}{TikZ picture}
+      \tikzstyle{format} = [draw, thin, fill=blue!20]
+      \tikzstyle{medium} = [ellipse, draw, thin, fill=green!20, minimum height=2.5em]
+      
+        \begin{tikzpicture}[node distance=3cm, auto,>=latex', thick]
+          % We need to set a bounding box first. Otherwise the diagram
+          % will change position for each frame.
+          \path[use as bounding box] (-5,0) rectangle (10,10);
+          \path[->] node[format] (tex) {.tex file};
+          \path[->] node[format, right of=tex] at ($(tex.east)+(2.5em,0)$) (dvi) {.dvi file}
+            (tex) edge node {\TeX} (dvi);
+          \path[->] node[format, right of=dvi] at ($(dvi.east)+(2.5em,0)$) (ps) {.ps file}
+            node[medium, below of=dvi] at ($(dvi.south)-(0,2.5em)$)(screen) {screen}
+            (dvi) edge node {dvips} (ps)
+            edge node[swap] {xdvi} (screen);
+          \path[->] node[format, right of=ps] at ($(ps.east)+(2.5em,0)$) (pdf) {.pdf file}
+            node[medium, below of=ps] at ($(ps.south)-(0,2.5em)$) (print) {printer}
+            (ps) edge node {ps2pdf} (pdf)
+            edge node[swap] {gs} (screen)
+            edge (print);
+          \path[->] (pdf) edge (screen)
+            edge (print);
+          \path[->, draw] (tex) -- +(0,5) -| node[near start] {pdf\TeX} (pdf);
+        \end{tikzpicture}
+
+      \end{posterbox}
+      
+      \vspace{\mydist}
+      %%
+      %% bottom left box
+      %%
+      \begin{posterbox}{28cm}{Pictures}
+        Rotate a mascot 90°
+        \myfig[90]{NewTux}{.2}
+        and 45°
+        \myfig[45]{NewTux}{.2}
+      \end{posterbox}
+    \end{minipage}
+
+    %% end left column; start next one
+
+    \begin{minipage}{\pcolwidth}
+    %%
+    %% top right box
+    %%
+    \begin{posterbox}{25cm}{Figure and Text}
+      \begin{minipage}{0.4\boxwidth}
+        Inviti itaque ad tempora male exacta animum revocant nec audent ea retemptare, quorum vitia,
+        etiam quae aliquo praesentis voluptatis lenocinio surripiebantur, retractando patescunt. Nemo,
+        nisi cui omnia acta sunt sub censura sua, quae numquam fallitur, libenter se in praeteritum
+        retorquet.			
+      \end{minipage}		
+      \hfill
+      \begin{minipage}{0.4\boxwidth}
+        \myfig[0]{logo/lfbslogo}{1}
+      \end{minipage}   
+      \hspace{1cm}
+    \end{posterbox}
+    
+    %%
+    %% middle right box
+    %%
+    \vspace{\mydist}
+    \begin{posterbox}{27cm}{Code}
+      Some Text with inline listing: \lstinline|#include <stdio.h>|
+      
+      \begin{lstlisting}[language=C,gobble=12]
+        #include <stdio.h>
+        #include "main.h"
+
+        int main (void) {
+          return 0;
+        }
+      \end{lstlisting}
+      More text.
+    \end{posterbox}
+      
+    %%
+    %% bottom right box
+    %%
+    \vspace{\mydist}
+    \begin{posterbox}{28cm}{Fonts}
+      Fonts can be {\Huge huge} and \textbf{fat} to increase readability.
+        
+      Highlighting foreign words by using colors:
+      \textcolor{blue}{Blau}
+    \end{posterbox}
+
+    \end{minipage}
+    \end{multicols}
+  \end{poster}
+
+\end{document}
+
